@@ -10,8 +10,6 @@ $('#generate').onclick=async()=>{const p=$('#prompt').value.trim();if(!p)return 
 $('#upload').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=async()=>{bg=await loadImage(r.result);draw()};r.readAsDataURL(f)};
 ['titleText','textColor','strokeColor','fontSize','textEffect'].forEach(id=>$('#'+id).oninput=draw);
 document.querySelectorAll('[data-sticker]').forEach(b=>b.onclick=()=>{snapshot();stickers.push({char:b.dataset.sticker,x:640,y:360,size:100});selected=stickers.length-1;draw()});
-$('#addWow').onclick=()=>{$('#titleText').value='WOW!';$('#textColor').value='#ffff00';$('#fontSize').value=120;draw()};
-$('#addNew').onclick=()=>{$('#titleText').value='NEW ✨';$('#textColor').value='#ffffff';$('#fontSize').value=110;draw()};
 $('#horseMode').onclick=()=>{snapshot();stickers.push({char:'🐴',x:1080,y:520,size:120},{char:'🏆',x:190,y:540,size:100});selected=stickers.length-1;draw()};
 $('#surprise').onclick=()=>{snapshot();const es=['outline','shadow','glow'],cs=['#ffffff','#ffff00','#00ffff','#ff69b4'];$('#textEffect').value=es[Math.floor(Math.random()*es.length)];$('#textColor').value=cs[Math.floor(Math.random()*cs.length)];$('#fontSize').value=70+Math.floor(Math.random()*50);draw()};
 $('#undo').onclick=()=>{if(!history.length)return;const s=JSON.parse(history.pop());textX=s.textX;textY=s.textY;stickers=s.stickers;selected=-1;draw()};
@@ -19,7 +17,8 @@ function point(e){const r=canvas.getBoundingClientRect(),p=e.touches?e.touches[0
 canvas.addEventListener('pointerdown',e=>{const p=point(e);selected=-1;for(let i=stickers.length-1;i>=0;i--){const s=stickers[i],z=s.size||90;if(Math.abs(p.x-s.x)<z*.8&&Math.abs(p.y-s.y)<z*.8){selected=i;break}}snapshot();drag=selected>=0?'sticker':'text';canvas.setPointerCapture?.(e.pointerId);draw()});
 canvas.addEventListener('pointermove',e=>{if(!drag)return;const p=point(e);if(drag==='sticker'&&selected>=0){stickers[selected].x=p.x;stickers[selected].y=p.y}else{textX=p.x;textY=p.y}draw()});
 canvas.addEventListener('pointerup',()=>drag=null);
-document.querySelectorAll('.emojiBox span').forEach(e=>e.onclick=()=>{const input=$('#titleText');input.value=(input.value+' '+e.textContent).trim();draw()});
+function applyStyle(name){snapshot();if(name==='viral'){ $('#titleText').value='WOW!';$('#textColor').value='#ffff00';$('#strokeColor').value='#000000';$('#fontSize').value=125;$('#textEffect').value='shadow'}if(name==='cute'){ $('#textColor').value='#ff69b4';$('#strokeColor').value='#ffffff';$('#fontSize').value=95;$('#textEffect').value='glow'}if(name==='drama'){ $('#textColor').value='#ff3b30';$('#strokeColor').value='#000000';$('#fontSize').value=120;$('#textEffect').value='shadow'}if(name==='music'){ $('#textColor').value='#00ffff';$('#strokeColor').value='#4c1d95';$('#fontSize').value=105;$('#textEffect').value='glow';stickers.push({char:'🎵',x:1080,y:520,size:110})}draw()}
+$('#viralStyle').onclick=()=>applyStyle('viral');$('#cuteStyle').onclick=()=>applyStyle('cute');$('#dramaStyle').onclick=()=>applyStyle('drama');$('#musicStyle').onclick=()=>applyStyle('music');
 $('#moveLeft').onclick=()=>{textX-=30;draw()};$('#moveRight').onclick=()=>{textX+=30;draw()};$('#moveUp').onclick=()=>{textY-=25;draw()};$('#moveDown').onclick=()=>{textY+=25;draw()};
 $('#download').onclick=()=>{draw();const a=document.createElement('a');a.download='youtube-thumbnail.png';a.href=canvas.toDataURL('image/png');a.click()};
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;$('#installBtn').hidden=false});$('#installBtn').onclick=async()=>{if(deferredPrompt){deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;$('#installBtn').hidden=true}};
