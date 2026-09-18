@@ -26,18 +26,23 @@
 <section><h2>Wybierz wersję</h2><div class="variants" id="variants"></div></section>
 <section class="editor panel">
 <h2>Edytor miniatury</h2>
-<div class="editTabs"><b>📝 Tekst</b><b>😀 Emotki</b><b>🖼️ Obraz</b></div>
+<div class="editTabs"><b>📝 Tekst</b><b>😀 Emotki</b><b>✨ Naklejki</b><b>🖼️ Obraz</b></div>
 <div class="emojiBox">
 <span>😀</span><span>😂</span><span>😍</span><span>😮</span><span>🔥</span><span>❤️</span><span>⭐</span><span>✨</span><span>👍</span><span>👀</span><span>🎵</span><span>🎬</span><span>📚</span><span>🐴</span><span>🏆</span><span>➡️</span>
 </div>
+<div class="stickerBox">
+<button data-sticker="⭐">⭐</button><button data-sticker="✨">✨</button><button data-sticker="🔥">🔥</button><button data-sticker="💖">💖</button><button data-sticker="👑">👑</button><button data-sticker="🎵">🎵</button><button data-sticker="🐴">🐴</button><button data-sticker="🏆">🏆</button><button data-sticker="➡️">➡️</button><button data-sticker="⭕">⭕</button>
+</div>
+<div class="quickTools"><button id="addWow">💥 WOW!</button><button id="addNew">✨ NEW</button><button id="horseMode">🐴 HORSE</button><button id="surprise">🎲 ZASKOCZ MNIE</button><button id="undo">↩️ COFNIJ</button></div>
 <div class="toolbar">
 <input id="upload" class="hiddenFile" type="file" accept="image/*">
 <input id="titleText" value="TWÓJ TYTUŁ" maxlength="60">
 <input id="textColor" type="color" value="#ffffff">
 <input id="strokeColor" type="color" value="#000000">
 <label>Rozmiar <input id="fontSize" type="range" min="36" max="150" value="86"></label>
+<label>Efekt<select id="textEffect"><option value="outline">Obrys</option><option value="shadow">Cień</option><option value="glow">Glow ✨</option></select></label>
 </div>
-<canvas id="canvas" width="1280" height="720"></canvas>
+<canvas id="canvas" width="1280" height="720"></canvas><p class="canvasHint">👆 Przeciągnij tekst lub naklejkę palcem. Dotknij naklejki, aby ją zaznaczyć.</p>
 <div class="actions"><button id="moveLeft">← Tekst</button><button id="moveRight">Tekst →</button><button id="moveUp">↑</button><button id="moveDown">↓</button><button class="primary" id="download">Pobierz PNG</button></div>
 </section>
 </main>
