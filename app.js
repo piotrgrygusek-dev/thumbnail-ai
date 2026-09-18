@@ -48,7 +48,9 @@ async function makeVariant(box,full,seed,n,preferred){
 }
 $('#generate').onclick=async()=>{
   const p=$('#prompt').value.trim();if(!p)return alert('Najpierw wpisz opis miniatury.');
-  const full=p+', '+$('#style').value+' style, '+$('#category').value+' YouTube thumbnail background, 16:9 composition, strong focal subject, full subject completely visible inside frame with generous safe margins, no cropped head or body or limbs, centered composition, room for large title, no text, no watermark';
+  const cat=$('#category').value;
+  const horseSafe=cat==='Horses'?', anatomically correct horse, exactly four horse legs, four distinct natural horse legs, correct hooves, natural leg positions, correct rider anatomy if a rider is present, exactly two human legs, no extra limbs, no duplicated legs, no fused limbs, no malformed anatomy, full horse body visible, realistic horse proportions':'';
+  const full=p+', '+$('#style').value+' style, '+cat+' YouTube thumbnail background, 16:9 composition, strong focal subject, full subject completely visible inside frame with generous safe margins, no cropped head or body or limbs, centered composition, room for large title, no text, no watermark'+horseSafe;
   const box=$('#variants');box.innerHTML='';const btn=$('#generate');btn.disabled=true;const base=Math.floor(Math.random()*900000)+10000;let ok=0;
   const engines=['pollinations','cloudflare','pollinations'];
   for(let n=1;n<=3;n++){
