@@ -3,10 +3,53 @@ let bg=null,textX=640,textY=120,deferredPrompt=null,stickers=[],selected=-1,hist
 function snapshot(){history.push(JSON.stringify({textX,textY,stickers}));if(history.length>20)history.shift()}
 function draw(){ctx.clearRect(0,0,1280,720);ctx.fillStyle='#1e293b';ctx.fillRect(0,0,1280,720);if(bg){const r=Math.max(1280/bg.width,720/bg.height),w=bg.width*r,h=bg.height*r;ctx.drawImage(bg,(1280-w)/2,(720-h)/2,w,h)}const live=$('#titleText').value.trim();if(selectedText<0&&live){texts[0]=texts[0]||{text:live,x:textX,y:textY,size:+$('#fontSize').value,color:$('#textColor').value,stroke:$('#strokeColor').value,effect:$('#textEffect').value};texts[0].text=live;texts[0].x=textX;texts[0].y=textY;texts[0].size=+$('#fontSize').value;texts[0].color=$('#textColor').value;texts[0].stroke=$('#strokeColor').value;texts[0].effect=$('#textEffect').value}texts.forEach((t,i)=>{if(!t||!t.text)return;ctx.font='900 '+t.size+'px Arial,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';ctx.shadowColor=t.effect==='glow'?t.color:'#000';ctx.shadowBlur=t.effect==='glow'?28:t.effect==='shadow'?16:0;ctx.shadowOffsetX=t.effect==='shadow'?8:0;ctx.shadowOffsetY=t.effect==='shadow'?8:0;ctx.strokeStyle=t.stroke;ctx.lineWidth=Math.max(8,t.size/9);ctx.strokeText(t.text,t.x,t.y);ctx.fillStyle=t.color;ctx.fillText(t.text,t.x,t.y);ctx.shadowBlur=0;ctx.shadowOffsetX=ctx.shadowOffsetY=0;if(i===selectedText){const w=Math.max(140,ctx.measureText(t.text).width+30);ctx.strokeStyle='#a78bfa';ctx.lineWidth=4;ctx.strokeRect(t.x-w/2,t.y-t.size*.7,w,t.size*1.4)}});stickers.forEach((s,i)=>{ctx.font=(s.size||90)+'px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(s.char,s.x,s.y);if(i===selected){ctx.strokeStyle='#a78bfa';ctx.lineWidth=5;ctx.strokeRect(s.x-(s.size||90)*.65,s.y-(s.size||90)*.65,(s.size||90)*1.3,(s.size||90)*1.3)}})}
 function loadImage(src,cors=false){return new Promise((res,rej)=>{const i=new Image();if(cors)i.crossOrigin='anonymous';i.onload=()=>res(i);i.onerror=rej;i.src=src})}
+const CLOUDFLARE_AI='https://thumbnail-ia-generator.piotr-grygusek.workers.dev/';
 function aiUrl(p,seed){return 'https://image.pollinations.ai/prompt/'+encodeURIComponent(p)+'?width=1280&height=720&seed='+seed+'&nologo=true&safe=true'}
 function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
-async function makeVariant(box,full,seed,n){const c=document.createElement('div');c.className='card';c.innerHTML='<div style="aspect-ratio:16/9;display:grid;place-items:center;padding:20px;color:#cbd5e1;text-align:center">⏳ Generuję wersję '+n+'…</div><span>Wersja '+n+'</span>';box.appendChild(c);const url=aiUrl(full,seed);try{const im=await loadImage(url,true);c.innerHTML='';im.alt='Wersja '+n;im.style.cssText='display:block;width:100%;aspect-ratio:16/9;object-fit:cover';c.appendChild(im);const s=document.createElement('span');s.textContent='Wersja '+n+' — dotknij, aby edytować';c.appendChild(s);c.onclick=()=>{bg=im;draw();document.querySelector('.editor').scrollIntoView({behavior:'smooth'})};return true}catch(e){c.innerHTML='<div style="aspect-ratio:16/9;display:grid;place-items:center;padding:20px;color:#fca5a5;text-align:center">Nie udało się wygenerować tej wersji.<br>Spróbuj ponownie.</div><span>Wersja '+n+'</span>';return false}}
-$('#generate').onclick=async()=>{const p=$('#prompt').value.trim();if(!p)return alert('Najpierw wpisz opis miniatury.');const full=p+', '+$('#style').value+' style, '+$('#category').value+' YouTube thumbnail background, 16:9 composition, strong focal subject, room for large title, no text, no watermark';const box=$('#variants');box.innerHTML='';const btn=$('#generate');btn.disabled=true;const base=Math.floor(Math.random()*900000)+10000;let ok=0;for(let n=1;n<=3;n++){ $('#status').textContent='Generuję wersję '+n+' z 3…';ok+=(await makeVariant(box,full,base+(n-1)*7919,n))?1:0;if(n<3)await sleep(6500)}$('#status').textContent=ok===3?'Gotowe — wybierz jedną z trzech wersji.':'Gotowe '+ok+'/3. Darmowy generator ma ograniczenie szybkości — możesz nacisnąć GENERUJ ponownie.';btn.disabled=false};
+async function cloudflareImage(prompt){
+  const r=await fetch(CLOUDFLARE_AI,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt})});
+  if(!r.ok)throw new Error('Cloudflare '+r.status);
+  const data=await r.json();
+  if(!data.image)throw new Error(data.error||'Brak obrazu');
+  return loadImage('data:image/jpeg;base64,'+data.image);
+}
+async function pollinationsImage(prompt,seed){return loadImage(aiUrl(prompt,seed),true)}
+async function getAiImage(prompt,seed,preferred){
+  try{
+    if(preferred==='cloudflare')return {im:await cloudflareImage(prompt),engine:'FLUX'};
+    return {im:await pollinationsImage(prompt,seed),engine:'Pollinations'};
+  }catch(first){
+    try{
+      if(preferred==='cloudflare')return {im:await pollinationsImage(prompt,seed),engine:'Pollinations backup'};
+      return {im:await cloudflareImage(prompt),engine:'FLUX backup'};
+    }catch(second){throw new Error('Oba generatory chwilowo nie odpowiedziały')}
+  }
+}
+async function makeVariant(box,full,seed,n,preferred){
+  const c=document.createElement('div');c.className='card';
+  c.innerHTML='<div style="aspect-ratio:16/9;display:grid;place-items:center;padding:20px;color:#cbd5e1;text-align:center">⏳ Generuję wersję '+n+'…</div><span>Wersja '+n+'</span>';box.appendChild(c);
+  try{
+    const {im,engine}=await getAiImage(full,seed,preferred);
+    c.innerHTML='';im.alt='Wersja '+n;im.style.cssText='display:block;width:100%;aspect-ratio:16/9;object-fit:cover';c.appendChild(im);
+    const label=document.createElement('span');label.textContent='Wersja '+n+' • '+engine+' — dotknij, aby edytować';c.appendChild(label);
+    c.onclick=()=>{bg=im;draw();document.querySelector('.editor').scrollIntoView({behavior:'smooth'})};return true;
+  }catch(e){
+    c.innerHTML='<div style="aspect-ratio:16/9;display:grid;place-items:center;padding:20px;color:#fca5a5;text-align:center">Nie udało się wygenerować tej wersji.<br>Spróbuj ponownie.</div><span>Wersja '+n+'</span>';return false;
+  }
+}
+$('#generate').onclick=async()=>{
+  const p=$('#prompt').value.trim();if(!p)return alert('Najpierw wpisz opis miniatury.');
+  const full=p+', '+$('#style').value+' style, '+$('#category').value+' YouTube thumbnail background, 16:9 composition, strong focal subject, room for large title, no text, no watermark';
+  const box=$('#variants');box.innerHTML='';const btn=$('#generate');btn.disabled=true;const base=Math.floor(Math.random()*900000)+10000;let ok=0;
+  const engines=['pollinations','cloudflare','pollinations'];
+  for(let n=1;n<=3;n++){
+    $('#status').textContent='Generuję wersję '+n+' z 3… ('+(engines[n-1]==='cloudflare'?'FLUX':'AI 1')+')';
+    ok+=(await makeVariant(box,full,base+(n-1)*7919,n,engines[n-1]))?1:0;
+    if(n<3)await sleep(2500);
+  }
+  $('#status').textContent=ok===3?'Gotowe — 3 wersje z dwóch silników AI. Wybierz jedną.':'Gotowe '+ok+'/3. Jeśli jeden silnik nie odpowiadał, aplikacja automatycznie próbowała drugiego.';
+  btn.disabled=false;
+};
 $('#upload').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=async()=>{bg=await loadImage(r.result);draw()};r.readAsDataURL(f)};
 function renderTextLayers(){const box=$('#textLayers');if(!box)return;box.innerHTML='';texts.forEach((t,i)=>{if(!t)return;const b=document.createElement('button');b.type='button';b.textContent=(i===selectedText?'✓ ':'')+(t.text||'Tekst '+(i+1));b.onclick=()=>selectText(i);box.appendChild(b)})}
 function selectText(i){selectedText=i;const t=texts[i];if(!t)return;$('#titleText').value=t.text;$('#fontSize').value=t.size;$('#textColor').value=t.color;$('#strokeColor').value=t.stroke;$('#textEffect').value=t.effect;textX=t.x;textY=t.y;renderTextLayers();draw()}
