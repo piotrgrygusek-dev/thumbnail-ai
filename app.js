@@ -6,12 +6,21 @@ function loadImage(src,cors=false){return new Promise((res,rej)=>{const i=new Im
 const CLOUDFLARE_AI='https://thumbnail-ia-generator.piotr-grygusek.workers.dev/';
 function aiUrl(p,seed){return 'https://image.pollinations.ai/prompt/'+encodeURIComponent(p)+'?width=1280&height=720&seed='+seed+'&nologo=true&safe=true'}
 function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
+async function normalizeTo169(im){
+  if(Math.abs(im.width/im.height-16/9)<0.02)return im;
+  const off=document.createElement('canvas');off.width=1280;off.height=720;const x=off.getContext('2d');
+  const cover=Math.max(1280/im.width,720/im.height),cw=im.width*cover,ch=im.height*cover;
+  x.save();x.globalAlpha=.32;x.filter='blur(34px)';x.drawImage(im,(1280-cw)/2,(720-ch)/2,cw,ch);x.restore();
+  const fit=Math.min(1280/im.width,720/im.height),w=im.width*fit,h=im.height*fit;
+  x.drawImage(im,(1280-w)/2,(720-h)/2,w,h);
+  return loadImage(off.toDataURL('image/jpeg',.94));
+}
 async function cloudflareImage(prompt){
   const r=await fetch(CLOUDFLARE_AI,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt})});
   if(!r.ok)throw new Error('Cloudflare '+r.status);
   const data=await r.json();
   if(!data.image)throw new Error(data.error||'Brak obrazu');
-  return loadImage('data:image/jpeg;base64,'+data.image);
+  return normalizeTo169(await loadImage('data:image/jpeg;base64,'+data.image));
 }
 async function pollinationsImage(prompt,seed){return loadImage(aiUrl(prompt,seed),true)}
 async function getAiImage(prompt,seed,preferred){
@@ -30,7 +39,7 @@ async function makeVariant(box,full,seed,n,preferred){
   c.innerHTML='<div style="aspect-ratio:16/9;display:grid;place-items:center;padding:20px;color:#cbd5e1;text-align:center">⏳ Generuję wersję '+n+'…</div><span>Wersja '+n+'</span>';box.appendChild(c);
   try{
     const {im,engine}=await getAiImage(full,seed,preferred);
-    c.innerHTML='';im.alt='Wersja '+n;im.style.cssText='display:block;width:100%;aspect-ratio:16/9;object-fit:contain;background:#0b1020';c.appendChild(im);
+    c.innerHTML='';im.alt='Wersja '+n;im.style.cssText='display:block;width:100%;height:auto;max-height:none;background:#0b1020';c.appendChild(im);
     const label=document.createElement('span');label.textContent='Wersja '+n+' • '+engine+' — dotknij, aby edytować';c.appendChild(label);
     c.onclick=()=>{bg=im;draw();document.querySelector('.editor').scrollIntoView({behavior:'smooth'})};return true;
   }catch(e){
