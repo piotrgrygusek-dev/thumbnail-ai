@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111827"><title>Thumbnail AI</title>
+<link rel="manifest" href="manifest.webmanifest"><link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header><div><b>Thumbnail AI</b><small> YouTube 1280×720</small></div><button id="installBtn" hidden>Zainstaluj</button></header>
+<main>
+<section class="panel">
+<h1>Stwórz 3 wersje miniatury</h1>
+<label>Opisz obraz</label>
+<textarea id="prompt" rows="4" placeholder="np. rudowłosa dziewczyna jadąca na czarnym koniu, zachód słońca, filmowy kadr"></textarea>
+<div class="grid">
+<label>Kategoria<select id="category"><option>Music</option><option>Horses</option><option>Books</option><option>Gaming</option><option>Vlog</option><option>Kids</option><option>Other</option></select></label>
+<label>Styl<select id="style"><option>Cinematic</option><option>Realistic</option><option>Fantasy</option><option>Cartoon</option><option>Cute</option><option>Dramatic</option></select></label>
+</div>
+<button class="primary" id="generate">✨ GENERUJ 3 WERSJE</button>
+<p class="note">Generator zewnętrzny może mieć darmowe limity. Aplikacja nie zawiera płatnego klucza ani karty.</p>
+<div id="status"></div>
+</section>
+<section><h2>Wybierz wersję</h2><div class="variants" id="variants"></div></section>
+<section class="editor panel">
+<h2>Edytor</h2>
+<div class="toolbar">
+<input id="upload" type="file" accept="image/*">
+<input id="titleText" value="TWÓJ TYTUŁ" maxlength="60">
+<input id="textColor" type="color" value="#ffffff">
+<input id="strokeColor" type="color" value="#000000">
+<label>Rozmiar <input id="fontSize" type="range" min="36" max="150" value="86"></label>
+</div>
+<canvas id="canvas" width="1280" height="720"></canvas>
+<div class="actions"><button id="moveLeft">← Tekst</button><button id="moveRight">Tekst →</button><button id="moveUp">↑</button><button id="moveDown">↓</button><button class="primary" id="download">Pobierz PNG</button></div>
+</section>
+</main>
+<script src="app.js"></script>
+</body></html>
