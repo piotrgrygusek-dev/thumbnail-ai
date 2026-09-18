@@ -52,13 +52,13 @@ $('#generate').onclick=async()=>{
   const horseSafe=cat==='Horses'?', anatomically correct horse, exactly four horse legs, four distinct natural horse legs, correct hooves, natural leg positions, correct rider anatomy if a rider is present, exactly two human legs, no extra limbs, no duplicated legs, no fused limbs, no malformed anatomy, full horse body visible, realistic horse proportions':'';
   const full=p+', '+$('#style').value+' style, '+cat+' YouTube thumbnail background, 16:9 composition, strong focal subject, full subject completely visible inside frame with generous safe margins, no cropped head or body or limbs, centered composition, room for large title, no text, no watermark'+horseSafe;
   const box=$('#variants');box.innerHTML='';const btn=$('#generate');btn.disabled=true;const base=Math.floor(Math.random()*900000)+10000;let ok=0;
-  const engines=['pollinations','cloudflare','pollinations'];
+  const engines=['cloudflare','cloudflare','cloudflare'];
   for(let n=1;n<=3;n++){
-    $('#status').textContent='Generuję wersję '+n+' z 3… ('+(engines[n-1]==='cloudflare'?'FLUX':'AI 1')+')';
+    $('#status').textContent='Generuję wersję '+n+' z 3… ('+(engines[n-1]==='cloudflare'?'FLUX':'Pollinations')+')';
     ok+=(await makeVariant(box,full,base+(n-1)*7919,n,engines[n-1]))?1:0;
     if(n<3)await sleep(2500);
   }
-  $('#status').textContent=ok===3?'Gotowe — 3 wersje z dwóch silników AI. Wybierz jedną.':'Gotowe '+ok+'/3. Jeśli jeden silnik nie odpowiadał, aplikacja automatycznie próbowała drugiego.';
+  $('#status').textContent=ok===3?'Gotowe — 3 wersje. FLUX jest silnikiem głównym, Pollinations działa jako automatyczny backup.':'Gotowe '+ok+'/3. Jeśli jeden silnik nie odpowiadał, aplikacja automatycznie próbowała drugiego.';
   btn.disabled=false;
 };
 $('#upload').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=async()=>{bg=await loadImage(r.result);draw()};r.readAsDataURL(f)};
