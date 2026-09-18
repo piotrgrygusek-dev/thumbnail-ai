@@ -16,15 +16,22 @@
 <label>Kategoria<select id="category"><option>Music</option><option>Horses</option><option>Books</option><option>Gaming</option><option>Vlog</option><option>Kids</option><option>Other</option></select></label>
 <label>Styl<select id="style"><option>Cinematic</option><option>Realistic</option><option>Fantasy</option><option>Cartoon</option><option>Cute</option><option>Dramatic</option></select></label>
 </div>
+<div class="create-actions">
 <button class="primary" id="generate">✨ GENERUJ 3 WERSJE</button>
+<label class="uploadBig" for="upload">🖼️ DODAJ WŁASNĄ GRAFIKĘ / ZDJĘCIE</label>
+</div>
 <p class="note">Generator zewnętrzny może mieć darmowe limity. Aplikacja nie zawiera płatnego klucza ani karty.</p>
 <div id="status"></div>
 </section>
 <section><h2>Wybierz wersję</h2><div class="variants" id="variants"></div></section>
 <section class="editor panel">
-<h2>Edytor</h2>
+<h2>Edytor miniatury</h2>
+<div class="editTabs"><b>📝 Tekst</b><b>😀 Emotki</b><b>🖼️ Obraz</b></div>
+<div class="emojiBox">
+<span>😀</span><span>😂</span><span>😍</span><span>😮</span><span>🔥</span><span>❤️</span><span>⭐</span><span>✨</span><span>👍</span><span>👀</span><span>🎵</span><span>🎬</span><span>📚</span><span>🐴</span><span>🏆</span><span>➡️</span>
+</div>
 <div class="toolbar">
-<input id="upload" type="file" accept="image/*">
+<input id="upload" class="hiddenFile" type="file" accept="image/*">
 <input id="titleText" value="TWÓJ TYTUŁ" maxlength="60">
 <input id="textColor" type="color" value="#ffffff">
 <input id="strokeColor" type="color" value="#000000">
